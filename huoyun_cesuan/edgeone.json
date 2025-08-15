@@ -1,7 +1,0 @@
-{
-"buildCommand": "npm run build:client",
-"installCommand": "npm install",
-"outputDirectory": "dist/static",
-"nodeVersion": "18.20.4",
-"redirects": []
-}
