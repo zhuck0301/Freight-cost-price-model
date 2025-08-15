@@ -1,28 +1,8 @@
 {
-  "name": "freight-cost-calculator",
-  "displayName": "货运成本价格模型（公路）",
-  "description": "专业的公路货运成本计算工具，帮助用户快速测算运输成本及价格",
-  "version": "1.0.0",
-  "author": "货运价格测算团队",
-  "main": "src/main.tsx",
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^7.3.0",
-    "recharts": "^2.15.1",
-    "zod": "^3.24.2"
-  },
-  "features": [
-    "货运成本精确计算",
-    "多种运输参数配置",
-    "历史记录保存与查询",
-    "成本参数自定义设置"
-  ],
-  "theme": {
-    "primaryColor": "#1E40AF",
-    "secondaryColor": "#3B82F6"
-  },
-  "permissions": [
-    "localStorage"
+  "theme": "light",
+  "pages": [
+    "src/pages/Home.tsx",
+    "src/pages/History.tsx",
+    "src/pages/Settings.tsx"
   ]
 }

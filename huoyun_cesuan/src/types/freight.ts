@@ -44,11 +44,11 @@ export interface FreightCalculation {
   };
 }
 
+// 删除重复的接口定义，只保留一个完整的定义
 export interface FreightResult {
   baseCost: number;
   totalCost: number;
   fixedCost: number;
-  variableCost: number;
   details: string[];
 }
 

@@ -81,11 +81,16 @@ export default function Settings() {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center mb-6">
+            // 在文件开头添加引入
+            import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+            import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+            
+            // 修复图标使用
             <button
               onClick={() => navigate(-1)}
               className="mr-4 text-blue-600 hover:text-blue-800"
             >
-              <i className="fa-solid fa-arrow-left"></i>
+              <FontAwesomeIcon icon={faArrowLeft} />
             </button>
             <h1 className="text-2xl font-bold text-gray-800">设置</h1>
           </div>

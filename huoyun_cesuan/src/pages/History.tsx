@@ -71,14 +71,38 @@ export default function History() {
     });
   };
 
+  // 修复运输方式类型不匹配问题
+  // 修改 getTransportTypeName 函数，确保它能接受字符串类型的参数
   const getTransportTypeName = (type: string) => {
     switch (type) {
       case 'land': return '陆运';
       case 'air': return '空运';
       case 'sea': return '海运';
-      default: return type;
+      default: return '未知';
     }
   };
+  
+  // 修改筛选逻辑，添加类型检查
+  useEffect(() => {
+    if (!records.length) return;
+    
+    const filtered = records.filter(record => {
+      const recordDate = new Date(record.timestamp);
+      const startDateObj = startDate ? new Date(startDate) : null;
+      const endDateObj = endDate ? new Date(endDate) : null;
+      
+      const dateMatch = (!startDateObj || recordDate >= startDateObj) && 
+                     (!endDateObj || recordDate <= endDateObj);
+      
+      // 确保类型安全
+      const transportTypeMatch = transportType === 'all' || 
+                                record.transportType === transportType;
+      
+      return dateMatch && transportTypeMatch;
+    });
+    
+    setFilteredRecords(filtered);
+  }, [records, startDate, endDate, transportType]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -139,10 +163,18 @@ export default function History() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="font-medium text-gray-800">{formatDate(record.timestamp)}</h3>
+                      // 修复前
                       <p className="text-sm text-gray-600">
                         {getTransportTypeName(record.formData.transportType)} · 
                         重量: {record.formData.weight}kg · 
                         距离: {record.formData.distance}km
+                      </p>
+                      
+                      // 修复后
+                      <p className="text-sm text-gray-600">
+                        {getTransportTypeName(record.formData.transportType)} · 
+                        车型: {record.formData.vehicleParams.vehicleType} · 
+                        距离: {record.formData.transportParams.distance}km
                       </p>
                     </div>
                     <div className="text-lg font-bold text-blue-600">
@@ -175,11 +207,16 @@ export default function History() {
                 <h2 className="text-xl font-bold text-gray-800">
                   {formatDate(selectedRecord.timestamp)}
                 </h2>
+                // 在文件开头添加引入
+                import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+                import { faXmark, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+                
+                // 修复图标使用
                 <button
                   onClick={() => setSelectedRecord(null)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <i className="fa-solid fa-xmark"></i>
+                  <FontAwesomeIcon icon={faXmark} />
                 </button>
               </div>
               
