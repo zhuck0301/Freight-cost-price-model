@@ -12,65 +12,8 @@ const formSchema = z.object({
   vehicleParams: z.object({
     brand: z.string(),
     vehicleType: z.enum(['9.6m', '17.5m', 'other']),
-    axleCount: z.number().min(0, '整车轴数不能为负'),
-    loadCapacity: z.number().min(0, '荷载吨位不能为负'),
-  }).superRefine((data, ctx) => {
-    // 总是验证其他车型的必填项
-    if (data.vehicleType === 'other') {
-      if (data.brand.trim() === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: '品牌为必填项',
-          path: ['brand'],
-        });
-      }
-      if (data.axleCount <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: '整车轴数为必填项',
-          path: ['axleCount'],
-        });
-      }
-      if (data.loadCapacity <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: '荷载吨位为必填项',
-          path: ['loadCapacity'],
-        });
-      }
-    }
-  }),
-  fixedCosts: z.object({
-    vehiclePrice: z.number().min(0, '购车金额不能为负'),
-    serviceLife: z.number().min(1, '使用年限必须大于0'),
-    depreciation: z.number().min(0, '折旧不能为负'),
-    driverSalary: z.number().min(0, '司机薪酬不能为负'),
-    repairFee: z.number().min(0, '维修费不能为负'),
-    vehicleInsurance: z.number().min(0, '车辆保险费不能为负'),
-    otherFixedCosts: z.number().min(0, '其他固定成本不能为负'),
-    totalFixedCost: z.number().min(0, '固定成本总和不能为负'),
-  }),
-  variableCosts: z.object({
-    fuelPrice: z.number().min(0, '油价不能为负'),
-    fuelConsumption: z.number().min(0, '油耗不能为负'),
-    fuelCost: z.number().min(0, '油费不能为负'),
-    tireCost: z.number().min(0, '轮胎费用不能为负'),
-    tollFee: z.number().min(0, '路桥费不能为负'),
-    maintenanceFee: z.number().min(0, '保养费不能为负'),
-    otherVariableCosts: z.number().min(0, '其他变动成本不能为负'),
-    totalVariableCost: z.number().min(0, '变动成本总和不能为负'),
-    expectedProfit: z.number().min(0, '期望利润不能为负'),
-  }),
-  transportParams: z.object({
-    actualLoad: z.number().min(0, '实际配载不能为负'),
-    distance: z.number().min(0, '运距不能为负'),
-    loadingUnloadingTime: z.number().min(0, '装卸货时间不能为负'),
-    estimatedDailyMileage: z.number().min(0.1, '预计行驶里程必须大于0'),
-    estimatedAnnualOneWayMileage: z.number().min(0, '预计单边行驶里程不能为负'),
-    estimatedTime: z.number().min(0.1, '预计总用时必须大于0'),
-    workingDays: z.number().min(1, '发货工作日必须大于0'),
-    benchmarkDistance: z.number().min(0, '基准运距不能为负'),
-  }),
+    // ... 其他验证规则
+  })
 });
 
 import { useRef } from 'react';

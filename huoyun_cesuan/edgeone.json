@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist/static",
+  "nodeVersion": "18.20.4",
+  "redirects": []
+}
