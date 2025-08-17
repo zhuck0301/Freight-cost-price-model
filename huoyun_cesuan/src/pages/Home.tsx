@@ -12,8 +12,65 @@ const formSchema = z.object({
   vehicleParams: z.object({
     brand: z.string(),
     vehicleType: z.enum(['9.6m', '17.5m', 'other']),
-    // ... 其他验证规则
-  })
+    axleCount: z.number().min(0, '整车轴数不能为负'),
+    loadCapacity: z.number().min(0, '荷载吨位不能为负'),
+  }).superRefine((data, ctx) => {
+    // 总是验证其他车型的必填项
+    if (data.vehicleType === 'other') {
+      if (data.brand.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '品牌为必填项',
+          path: ['brand'],
+        });
+      }
+      if (data.axleCount <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '整车轴数为必填项',
+          path: ['axleCount'],
+        });
+      }
+      if (data.loadCapacity <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '荷载吨位为必填项',
+          path: ['loadCapacity'],
+        });
+      }
+    }
+  }),
+  fixedCosts: z.object({
+    vehiclePrice: z.number().min(0, '购车金额不能为负'),
+    serviceLife: z.number().min(1, '使用年限必须大于0'),
+    depreciation: z.number().min(0, '折旧不能为负'),
+    driverSalary: z.number().min(0, '司机薪酬不能为负'),
+    repairFee: z.number().min(0, '维修费不能为负'),
+    vehicleInsurance: z.number().min(0, '车辆保险费不能为负'),
+    otherFixedCosts: z.number().min(0, '其他固定成本不能为负'),
+    totalFixedCost: z.number().min(0, '固定成本总和不能为负'),
+  }),
+  variableCosts: z.object({
+    fuelPrice: z.number().min(0, '油价不能为负'),
+    fuelConsumption: z.number().min(0, '油耗不能为负'),
+    fuelCost: z.number().min(0, '油费不能为负'),
+    tireCost: z.number().min(0, '轮胎费用不能为负'),
+    tollFee: z.number().min(0, '路桥费不能为负'),
+    maintenanceFee: z.number().min(0, '保养费不能为负'),
+    otherVariableCosts: z.number().min(0, '其他变动成本不能为负'),
+    totalVariableCost: z.number().min(0, '变动成本总和不能为负'),
+    expectedProfit: z.number().min(0, '期望利润不能为负'),
+  }),
+  transportParams: z.object({
+    actualLoad: z.number().min(0, '实际配载不能为负'),
+    distance: z.number().min(0, '运距不能为负'),
+    loadingUnloadingTime: z.number().min(0, '装卸货时间不能为负'),
+    estimatedDailyMileage: z.number().min(0.1, '预计行驶里程必须大于0'),
+    estimatedAnnualOneWayMileage: z.number().min(0, '预计单边行驶里程不能为负'),
+    estimatedTime: z.number().min(0.1, '预计总用时必须大于0'),
+    workingDays: z.number().min(1, '发货工作日必须大于0'),
+    benchmarkDistance: z.number().min(0, '基准运距不能为负'),
+  }),
 });
 
 import { useRef } from 'react';
@@ -22,6 +79,119 @@ export default function Home() {
   const [showVehicleTypePrompt, setShowVehicleTypePrompt] = useState(true);
   const distanceInputRef = useRef<HTMLInputElement>(null);
   const loadingWeightRef = useRef<HTMLInputElement>(null);
+  // 设置车型默认值
+const resetTransportParams = () => {
+  // 根据当前车型设置对应的默认值
+  let transportParamsDefaults;
+  
+  switch(formData.vehicleParams.vehicleType) {
+    case '9.6m':
+      transportParamsDefaults = {
+        loadingWeight: 15,
+        loadingQuantity: 750,
+        loadingVolume: 65,
+        distance: 0,
+        loadingUnloadingTime: 0.2,
+        adjustmentFactor1: 1,
+        adjustmentFactor2: 1,
+        tripsPerDay: 1,
+        estimatedDailyMileage: 800,
+        estimatedAnnualOneWayMileage: 100000,
+        estimatedTime: 0,
+        workingDays: 269,
+        benchmarkDistance: 0,
+      };
+      break;
+    case '17.5m':
+      transportParamsDefaults = {
+        loadingWeight: 30,
+        loadingQuantity: 1500,
+        loadingVolume: 120,
+        distance: 0,
+        loadingUnloadingTime: 0.2,
+        adjustmentFactor1: 1,
+        adjustmentFactor2: 1,
+        tripsPerDay: 1,
+        estimatedDailyMileage: 800,
+        estimatedAnnualOneWayMileage: 100000,
+        estimatedTime: 0,
+        workingDays: 269,
+        benchmarkDistance: 0,
+      };
+      break;
+    default: // other
+      transportParamsDefaults = {
+        loadingWeight: 0,
+        loadingQuantity: 0,
+        loadingVolume: 0,
+        distance: 0,
+        loadingUnloadingTime: 0.2,
+        adjustmentFactor1: 1,
+        adjustmentFactor2: 1,
+        tripsPerDay: 1,
+        estimatedDailyMileage: 800,
+        estimatedAnnualOneWayMileage: 100000,
+        estimatedTime: 0,
+        workingDays: 269,
+        benchmarkDistance: 0,
+      };
+  }
+  
+  setFormData(prev => ({
+    ...prev,
+    transportParams: transportParamsDefaults
+  }));
+};
+
+const resetVariableCosts = () => {
+  let variableDefaults;
+  
+  switch(formData.vehicleParams.vehicleType) {
+    case '9.6m':
+      variableDefaults = {
+        fuelConsumption: 25,
+        tireCost: 0.12,
+        tollFee: 1.5,
+        maintenanceFee: 0.5,
+        otherVariableCosts: 0,
+        expectedProfit: 50000,
+      };
+      break;
+    case '17.5m':
+      variableDefaults = {
+        fuelConsumption: 35,
+        tireCost: 0.26,
+        tollFee: 2.26,
+        maintenanceFee: 0.8,
+        otherVariableCosts: 0,
+        expectedProfit: 100000,
+      };
+      break;
+    default: // other
+      variableDefaults = {
+        fuelConsumption: 0,
+        tireCost: 0,
+        tollFee: 0,
+        maintenanceFee: 0,
+        otherVariableCosts: 0,
+        expectedProfit: 0,
+      };
+  }
+  
+  // 计算油费和变动成本总和
+  const fuelCost = formData.variableCosts.fuelPrice * variableDefaults.fuelConsumption / 100;
+  const totalVariableCost = fuelCost + variableDefaults.tireCost + variableDefaults.tollFee + variableDefaults.maintenanceFee + variableDefaults.otherVariableCosts;
+  
+  setFormData(prev => ({
+    ...prev,
+    variableCosts: {
+      ...prev.variableCosts,
+      ...variableDefaults,
+      fuelCost,
+      totalVariableCost
+    }
+  }));
+};
 
   const setVehicleDefaults = (vehicleType: '9.6m' | '17.5m' | 'other') => {
     let fixedDefaults, variableDefaults, brand, loadCapacity;
@@ -187,120 +357,6 @@ export default function Home() {
         tripsPerDay: 1,
     },
   });
-  
-  // 设置车型默认值
-  const resetTransportParams = () => {
-    // 根据当前车型设置对应的默认值
-    let transportParamsDefaults;
-    
-    switch(formData.vehicleParams.vehicleType) {
-      case '9.6m':
-        transportParamsDefaults = {
-          loadingWeight: 15,
-          loadingQuantity: 750,
-          loadingVolume: 65,
-          distance: 0,
-          loadingUnloadingTime: 0.2,
-          adjustmentFactor1: 1,
-          adjustmentFactor2: 1,
-          tripsPerDay: 1,
-          estimatedDailyMileage: 800,
-          estimatedAnnualOneWayMileage: 100000,
-          estimatedTime: 0,
-          workingDays: 269,
-          benchmarkDistance: 0,
-        };
-        break;
-      case '17.5m':
-        transportParamsDefaults = {
-          loadingWeight: 30,
-          loadingQuantity: 1500,
-          loadingVolume: 120,
-          distance: 0,
-          loadingUnloadingTime: 0.2,
-          adjustmentFactor1: 1,
-          adjustmentFactor2: 1,
-          tripsPerDay: 1,
-          estimatedDailyMileage: 800,
-          estimatedAnnualOneWayMileage: 100000,
-          estimatedTime: 0,
-          workingDays: 269,
-          benchmarkDistance: 0,
-        };
-        break;
-      default: // other
-        transportParamsDefaults = {
-          loadingWeight: 0,
-          loadingQuantity: 0,
-          loadingVolume: 0,
-          distance: 0,
-          loadingUnloadingTime: 0.2,
-          adjustmentFactor1: 1,
-          adjustmentFactor2: 1,
-          tripsPerDay: 1,
-          estimatedDailyMileage: 800,
-          estimatedAnnualOneWayMileage: 100000,
-          estimatedTime: 0,
-          workingDays: 269,
-          benchmarkDistance: 0,
-        };
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      transportParams: transportParamsDefaults
-    }));
-  };
-  
-  const resetVariableCosts = () => {
-    let variableDefaults;
-    
-    switch(formData.vehicleParams.vehicleType) {
-      case '9.6m':
-        variableDefaults = {
-          fuelConsumption: 25,
-          tireCost: 0.12,
-          tollFee: 1.5,
-          maintenanceFee: 0.5,
-          otherVariableCosts: 0,
-          expectedProfit: 50000,
-        };
-        break;
-      case '17.5m':
-        variableDefaults = {
-          fuelConsumption: 35,
-          tireCost: 0.26,
-          tollFee: 2.26,
-          maintenanceFee: 0.8,
-          otherVariableCosts: 0,
-          expectedProfit: 100000,
-        };
-        break;
-      default: // other
-        variableDefaults = {
-          fuelConsumption: 0,
-          tireCost: 0,
-          tollFee: 0,
-          maintenanceFee: 0,
-          otherVariableCosts: 0,
-          expectedProfit: 0,
-        };
-    }
-    
-    // 计算油费和变动成本总和
-    const fuelCost = formData.variableCosts.fuelPrice * variableDefaults.fuelConsumption / 100;
-    const totalVariableCost = fuelCost + variableDefaults.tireCost + variableDefaults.tollFee + variableDefaults.maintenanceFee + variableDefaults.otherVariableCosts;
-    
-    setFormData(prev => ({
-      ...prev,
-      variableCosts: {
-        ...prev.variableCosts,
-        ...variableDefaults,
-        fuelCost,
-        totalVariableCost
-      }
-    }));
-  };
   const [result, setResult] = useState<FreightResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -312,11 +368,10 @@ export default function Home() {
       // 验证表单数据
       formSchema.parse(formData);
 
-      // 修改 calculateFreight 函数中的计算逻辑
-const transportCost = 
-  (formData.transportParams.workingDays > 0 && formData.transportParams.estimatedTime > 0 
-    ? formData.fixedCosts.totalFixedCost / (formData.transportParams.workingDays / formData.transportParams.estimatedTime) 
-    : 0) +
+      // 计算运输成本
+       const transportCost = 
+  (formData.fixedCosts.totalFixedCost / 
+    (formData.transportParams.workingDays / formData.transportParams.estimatedTime)) +
   (formData.variableCosts.totalVariableCost * formData.transportParams.distance);
       
         const details = [
@@ -466,9 +521,9 @@ const transportCost =
                 <input
                   type="number"
                   min="0"
-                  value={formData.fixedCosts.vehiclePrice === 0 ? '0' : (formData.fixedCosts.vehiclePrice !== undefined ? formData.fixedCosts.vehiclePrice : '')}
+                  value={formData.fixedCosts.vehiclePrice || ''}
                   onChange={(e) => {
-                    const vehiclePrice = parseFloat(e.target.value) || 0;
+                    const vehiclePrice = parseFloat(e.target.value);
                     const serviceLife = formData.fixedCosts.serviceLife;
                     const depreciation = serviceLife > 0 ? vehiclePrice / serviceLife : 0;
                     setFormData({
@@ -491,7 +546,7 @@ const transportCost =
                 <input
                   type="number"
                   min="1"
-                  value={formData.fixedCosts.serviceLife !== undefined ? formData.fixedCosts.serviceLife : ''}
+                  value={formData.fixedCosts.serviceLife || ''}
                   onChange={(e) => {
                     const serviceLife = parseFloat(e.target.value);
                     const depreciation = serviceLife > 0 ? formData.fixedCosts.vehiclePrice / serviceLife : 0;
@@ -526,7 +581,7 @@ const transportCost =
                 <input
                   type="number"
                   min="0"
-                  value={formData.fixedCosts.driverSalary !== undefined ? formData.fixedCosts.driverSalary : ''}
+                  value={formData.fixedCosts.driverSalary || ''}
                   onChange={(e) => {
                     const driverSalary = parseFloat(e.target.value);
                     setFormData({
@@ -548,7 +603,7 @@ const transportCost =
                  <input
                    type="number"
                    min="0"
-                   value={formData.fixedCosts.repairFee !== undefined ? formData.fixedCosts.repairFee : ''}
+                   value={formData.fixedCosts.repairFee || ''}
                    onChange={(e) => {
                      const repairFee = parseFloat(e.target.value);
                      setFormData({
@@ -570,7 +625,7 @@ const transportCost =
                  <input
                    type="number"
                    min="0"
-                   value={formData.fixedCosts.vehicleInsurance !== undefined ? formData.fixedCosts.vehicleInsurance : ''}
+                   value={formData.fixedCosts.vehicleInsurance || ''}
                    onChange={(e) => {
                      const vehicleInsurance = parseFloat(e.target.value);
                      setFormData({
@@ -592,7 +647,7 @@ const transportCost =
                  <input
                    type="number"
                    min="0"
-                   value={formData.fixedCosts.otherFixedCosts !== undefined ? formData.fixedCosts.otherFixedCosts : ''}
+                   value={formData.fixedCosts.otherFixedCosts || ''}
                    onChange={(e) => {
                      const otherFixedCosts = parseFloat(e.target.value);
                      setFormData({
@@ -633,7 +688,7 @@ const transportCost =
                    type="number"
                    min="0"
                    step="0.01"
-                   value={formData.variableCosts.fuelPrice !== undefined ? formData.variableCosts.fuelPrice : ''}
+                   value={formData.variableCosts.fuelPrice || ''}
                    onChange={(e) => {
                      const fuelPrice = parseFloat(e.target.value) || 0;
                      const fuelCost = fuelPrice * formData.variableCosts.fuelConsumption / 100;
@@ -658,7 +713,7 @@ const transportCost =
                    type="number"
                    min="0"
                    step="0.01"
-                   value={formData.variableCosts.fuelConsumption !== undefined ? formData.variableCosts.fuelConsumption : ''}
+                   value={formData.variableCosts.fuelConsumption || ''}
                    onChange={(e) => {
                      const fuelConsumption = parseFloat(e.target.value) || 0;
                      const fuelCost = formData.variableCosts.fuelPrice * fuelConsumption / 100;
@@ -695,7 +750,7 @@ const transportCost =
                    type="number"
                    min="0"
                    step="0.01"
-                   value={formData.variableCosts.tireCost !== undefined ? formData.variableCosts.tireCost : ''}
+                   value={formData.variableCosts.tireCost || ''}
                    onChange={(e) => {
                      const tireCost = parseFloat(e.target.value) || 0;
                      setFormData({
@@ -718,7 +773,7 @@ const transportCost =
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.variableCosts.tollFee !== undefined ? formData.variableCosts.tollFee : ''}
+                  value={formData.variableCosts.tollFee || ''}
                   onChange={(e) => {
                     const tollFee = parseFloat(e.target.value) || 0;
                     setFormData({
@@ -741,7 +796,7 @@ const transportCost =
                    type="number"
                    min="0"
                    step="0.01"
-                   value={formData.variableCosts.maintenanceFee !== undefined ? formData.variableCosts.maintenanceFee : ''}
+                   value={formData.variableCosts.maintenanceFee || ''}
                    onChange={(e) => {
                      const maintenanceFee = parseFloat(e.target.value) || 0;
                      setFormData({
@@ -764,7 +819,7 @@ const transportCost =
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.variableCosts.otherVariableCosts !== undefined ? formData.variableCosts.otherVariableCosts : ''}
+                    value={formData.variableCosts.otherVariableCosts || ''}
                     onChange={(e) => {
                       const otherVariableCosts = parseFloat(e.target.value) || 0;
                       setFormData({
@@ -796,6 +851,14 @@ const transportCost =
           
 
 
+          {/* 计算按钮 */}
+           <button
+            onClick={calculateFreight}
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+          >
+            {loading ? '计算中...' : '车辆参数'}
+          </button>
           
            {/* 第三部分：运输参数 */}
            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -808,13 +871,11 @@ const transportCost =
                  <input
                    type="number"
                    min="0"
-                   value={formData.transportParams.distance !== undefined ? formData.transportParams.distance : ''}
+                   value={formData.transportParams.distance || ''}
                    onChange={(e) => {
                      const distance = parseFloat(e.target.value) || 0;
-                     const estimatedDailyMileage = Math.max(formData.transportParams.estimatedDailyMileage, 0.1); // 确保不为0
-const estimatedTime = distance / estimatedDailyMileage + formData.transportParams.loadingUnloadingTime;
-const denominator = formData.transportParams.workingDays / 2 / estimatedTime;
-const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.estimatedAnnualOneWayMileage / denominator) : 0;
+                     const estimatedTime = distance / formData.transportParams.estimatedDailyMileage + formData.transportParams.loadingUnloadingTime;
+const benchmarkDistance = Math.round(formData.transportParams.estimatedAnnualOneWayMileage / (formData.transportParams.workingDays / 2 / estimatedTime));
                      setFormData({
                        ...formData,
                        transportParams: {
@@ -839,13 +900,11 @@ const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.
                    type="number"
                    min="0"
                    step="0.1"
-                   value={formData.transportParams.loadingUnloadingTime !== undefined ? formData.transportParams.loadingUnloadingTime : ''}
+                   value={formData.transportParams.loadingUnloadingTime || ''}
                    onChange={(e) => {
                      const loadingUnloadingTime = parseFloat(e.target.value) || 0;
-                     const estimatedDailyMileage = Math.max(formData.transportParams.estimatedDailyMileage, 0.1); // 确保不为0
-const estimatedTime = formData.transportParams.distance / estimatedDailyMileage + loadingUnloadingTime;
-const denominator = formData.transportParams.workingDays / 2 / estimatedTime;
-const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.estimatedAnnualOneWayMileage / denominator) : 0;
+                     const estimatedTime = formData.transportParams.distance / formData.transportParams.estimatedDailyMileage + loadingUnloadingTime;
+const benchmarkDistance = Math.round(formData.transportParams.estimatedAnnualOneWayMileage / (formData.transportParams.workingDays / 2 / estimatedTime));
                      setFormData({
                        ...formData,
                        transportParams: {
@@ -866,13 +925,11 @@ const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.
                  <input
                    type="number"
                    min="0.1"
-                   value={formData.transportParams.estimatedDailyMileage !== undefined ? formData.transportParams.estimatedDailyMileage : ''}
+                   value={formData.transportParams.estimatedDailyMileage || ''}
                    onChange={(e) => {
                      const estimatedDailyMileage = parseFloat(e.target.value) || 0;
-                     const safeEstimatedDailyMileage = Math.max(estimatedDailyMileage, 0.1); // 确保不为0
-const estimatedTime = formData.transportParams.distance / safeEstimatedDailyMileage + formData.transportParams.loadingUnloadingTime;
-const denominator = formData.transportParams.workingDays / 2 / estimatedTime;
-const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.estimatedAnnualOneWayMileage / denominator) : 0;
+                     const estimatedTime = formData.transportParams.distance / estimatedDailyMileage + formData.transportParams.loadingUnloadingTime;
+const benchmarkDistance = Math.round(formData.transportParams.estimatedAnnualOneWayMileage / (formData.transportParams.workingDays / 2 / estimatedTime));
                      setFormData({
                        ...formData,
                        transportParams: {
@@ -893,11 +950,10 @@ const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.
                  <input
                    type="number"
                    min="0"
-                   value={formData.transportParams.estimatedAnnualOneWayMileage !== undefined ? formData.transportParams.estimatedAnnualOneWayMileage : ''}
+                   value={formData.transportParams.estimatedAnnualOneWayMileage || ''}
                    onChange={(e) => {
                      const estimatedAnnualOneWayMileage = parseFloat(e.target.value) || 0;
-const denominator = formData.transportParams.workingDays / 2 / formData.transportParams.estimatedTime;
-const benchmarkDistance = denominator > 0 ? Math.round(estimatedAnnualOneWayMileage / denominator) : 0;
+const benchmarkDistance = Math.round(estimatedAnnualOneWayMileage / (formData.transportParams.workingDays / 2 / formData.transportParams.estimatedTime));
                      setFormData({
                        ...formData,
                        transportParams: {
@@ -929,11 +985,10 @@ const benchmarkDistance = denominator > 0 ? Math.round(estimatedAnnualOneWayMile
                  <input
                    type="number"
                    min="1"
-                   value={formData.transportParams.workingDays !== undefined ? formData.transportParams.workingDays : ''}
+                   value={formData.transportParams.workingDays || ''}
                    onChange={(e) => {
                      const workingDays = parseFloat(e.target.value) || 0;
-const denominator = workingDays / 2 / formData.transportParams.estimatedTime;
-const benchmarkDistance = denominator > 0 ? Math.round(formData.transportParams.estimatedAnnualOneWayMileage / denominator) : 0;
+const benchmarkDistance = Math.round(formData.transportParams.estimatedAnnualOneWayMileage / (workingDays / 2 / formData.transportParams.estimatedTime));
                      setFormData({
                        ...formData,
                        transportParams: {
@@ -965,7 +1020,7 @@ value={formData.transportParams.benchmarkDistance.toFixed(0)}
                    <input
                      type="number"
                      min="0"
-                     value={formData.variableCosts.expectedProfit !== undefined ? formData.variableCosts.expectedProfit : ''}
+                     value={formData.variableCosts.expectedProfit || ''}
                      onChange={(e) => setFormData({
                        ...formData,
                        variableCosts: {
@@ -1039,18 +1094,20 @@ value={formData.transportParams.benchmarkDistance.toFixed(0)}
              
              {/* 运输成本计算区域 */}
              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-
+                <button
+                  onClick={calculateFreight}
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                >
+                  {loading ? '计算中...' : '计算成本'}
+                </button>
                
                {/* 计算所需数据 */}
                {(() => {
   // 计算每趟固定成本 (>1天/趟)
-  const fixedCost = formData.transportParams.workingDays > 0 && formData.transportParams.estimatedTime > 0 
-    ? formData.fixedCosts.totalFixedCost / (formData.transportParams.workingDays / formData.transportParams.estimatedTime) 
-    : 0;
+  const fixedCost = formData.fixedCosts.totalFixedCost / (formData.transportParams.workingDays / formData.transportParams.estimatedTime);
   const variableCost = formData.variableCosts.totalVariableCost * formData.transportParams.distance;
-  const grossProfit = formData.transportParams.estimatedAnnualOneWayMileage > 0 
-    ? (formData.variableCosts.expectedProfit / formData.transportParams.estimatedAnnualOneWayMileage) * formData.transportParams.benchmarkDistance 
-    : 0;
+  const grossProfit = (formData.variableCosts.expectedProfit / formData.transportParams.estimatedAnnualOneWayMileage) * formData.transportParams.benchmarkDistance;
   const totalCostOver1Day = (fixedCost + variableCost + grossProfit) * formData.transportParams.adjustmentFactor1;
                 
                  // 定义短途运输的基础成本变量
@@ -1074,7 +1131,7 @@ const costPerTonKmOver1Day = formData.transportParams.loadingWeight > 0 && formD
   ? totalCostOver1Day / (formData.transportParams.loadingWeight * formData.transportParams.distance)
   : 0;
   
-const costPerTonKmShort = formData.transportParams.loadingWeight > 0 ? costPerKmShort / formData.transportParams.loadingWeight : 0;
+const costPerTonKmShort = costPerKmShort / formData.transportParams.actualLoad;
 
 // 更新元/吨计算：单趟运费合计值 / 配载重量
 const costPerTonOver1Day = formData.transportParams.loadingWeight > 0
@@ -1248,6 +1305,8 @@ const costPerVolumeOver1Day = formData.transportParams.loadingVolume > 0
               })()}
             </div>
             
+           {/* 计算按钮已移至运输成本计算区域 */}
+          
           {/* 计算结果 */}
           {result && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">

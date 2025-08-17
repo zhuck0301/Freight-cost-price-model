@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev:client": "vite --host --port 3000",
-    "dev": "npm run dev:client",
-    "build:client": "vite build --outDir dist/static"
+    "dev": "pnpm dev:client",
+    "build:client": "vite build --outDir dist/static",
+    "build": "if exist dist rmdir /s /q dist && vite build --outDir dist/static && copy package.json dist && type nul > dist/build.flag"
   },
   "dependencies": {
     "clsx": "^2.1.1",

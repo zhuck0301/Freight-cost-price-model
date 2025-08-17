@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>货运价格模型测算工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        dark: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-truck text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-dark">货运价格模型</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#home" class="text-primary font-medium">首页</a>
+                <a href="#features" class="text-gray-600 hover:text-primary transition-colors">功能</a>
+                <a href="#calculator" class="text-gray-600 hover:text-primary transition-colors">测算工具</a>
+                <a href="#history" class="text-gray-600 hover:text-primary transition-colors">历史记录</a>
+            </nav>
+            <button class="md:hidden text-dark">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主横幅 -->
+    <section id="home" class="bg-gradient-primary text-white py-16 md:py-24">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">智能货运价格测算系统</h2>
+            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
+                为您提供精准、高效的货运价格计算服务，帮助您优化物流成本，提升业务竞争力
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#calculator" class="bg-white text-primary font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all">
+                    立即测算
+                </a>
+                <a href="#features" class="bg-transparent border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-all">
+                    了解更多
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能特点 -->
+    <section id="features" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">核心功能</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-calculator text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">精准测算</h3>
+                    <p class="text-gray-600">
+                        基于多种参数和实时数据，提供精确的货运价格计算结果，帮助您做出明智决策。
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-history text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">历史记录</h3>
+                    <p class="text-gray-600">
+                        自动保存您的测算历史，方便随时查看和对比不同方案的价格差异。
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-line-chart text-purple-500 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">数据分析</h3>
+                    <p class="text-gray-600">
+                        通过图表直观展示价格趋势和影响因素，帮助您洞察市场变化。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 测算工具预览 -->
+    <section id="calculator" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">测算工具</h2>
+            <div class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md">
+                <form class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="origin" class="block text-sm font-medium text-gray-700 mb-1">出发地</label>
+                            <input type="text" id="origin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入出发城市">
+                        </div>
+                        <div>
+                            <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">目的地</label>
+                            <input type="text" id="destination" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入目的城市">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">货物重量 (吨)</label>
+                            <input type="number" id="weight" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入货物重量">
+                        </div>
+                        <div>
+                            <label for="volume" class="block text-sm font-medium text-gray-700 mb-1">货物体积 (立方米)</label>
+                            <input type="number" id="volume" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="输入货物体积">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="cargoType" class="block text-sm font-medium text-gray-700 mb-1">货物类型</label>
+                        <select id="cargoType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            <option value="">请选择货物类型</option>
+                            <option value="general">普通货物</option>
+                            <option value="fragile">易碎品</option>
+                            <option value="dangerous">危险品</option>
+                            <option value="perishable">易腐品</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="transportType" class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
+                        <select id="transportType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            <option value="">请选择运输方式</option>
+                            <option value="road">公路运输</option>
+                            <option value="rail">铁路运输</option>
+                            <option value="water">水路运输</option>
+                            <option value="air">航空运输</option>
+                        </select>
+                    </div>
+                    <button type="button" class="w-full bg-primary text-white font-semibold py-3 rounded-lg shadow hover:bg-primary/90 transition-colors">
+                        计算价格
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-truck text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold">货运价格模型</h2>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        为物流行业提供精准的价格测算和数据分析服务，助力企业降本增效。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-weixin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">功能特点</a></li>
+                        <li><a href="#calculator" class="text-gray-400 hover:text-white transition-colors">测算工具</a></li>
+                        <li><a href="#history" class="text-gray-400 hover:text-white transition-colors">历史记录</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start space-x-2">
+                            <i class="fa fa-envelope-o text-primary mt-1"></i>
+                            <span class="text-gray-400">contact@freightcalc.com</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <i class="fa fa-phone text-primary mt-1"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <i class="fa fa-map-marker text-primary mt-1"></i>
+                            <span class="text-gray-400">上海市浦东新区张江高科技园区</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2024 货运价格模型测算工具. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 返回顶部功能
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
